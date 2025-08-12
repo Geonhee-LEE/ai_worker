@@ -34,11 +34,9 @@
       </geometry>
     </collision>
     <inertial>
-       <origin xyz="-4.574796400e-02 6.581058800e-03 1.943184200e-01" />
-       <mass value="3.598943900e+01" />
-       <inertia ixx="1.725473500e+04" ixy="6.471795500e-02" ixz="1.890204600e-01"
-       iyy="3.983747500e+04" iyz="1.716567300e-01"
-       izz="2.846139500e+04" />
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="100.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
     </inertial>
   </link>
 
@@ -59,11 +57,9 @@
       </geometry>
     </collision>
     <inertial>
-       <origin xyz="-1.286987800e-01 -1.604580800e-05 8.945601700e-01" />
-       <mass value="1.790000000e+01" />
-       <inertia ixx="1.009479700e+04" ixy="-3.568141800e-02" ixz="1.213165300e+03"
-       iyy="1.027057300e+04" iyz="7.021994000e-02"
-       izz="1.971602000e+02" />
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
     </inertial>
   </link>
   <joint name="$(arg prefix)lift_fixed_joint" type="fixed">
@@ -84,12 +80,28 @@
     <origin xyz="0 0 -0.078" rpy="0 3.14159265359 3.14159265359"/>
   </xacro:rh_p12_rn_a>
 
+  <xacro:macro name="solid_cylinder_inertia" params="mass_val radius_val length_val">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${mass_val}" />
+      <xacro:property name="r_sq" value="${radius_val * radius_val}" />
+      <xacro:property name="l_sq" value="${length_val * length_val}" />
+      <xacro:property name="ixx_iyy_val" value="${(1.0/12.0) * mass_val * (3 * r_sq + l_sq)}" />
+      <xacro:property name="izz_val" value="${0.5 * mass_val * r_sq}" />
+      <inertia
+        ixx="${ixx_iyy_val}" ixy="0.0" ixz="0.0"
+        iyy="${ixx_iyy_val}" iyz="0.0"
+        izz="${izz_val}" />
+    </inertial>
+  </xacro:macro>
+
   <joint name="$(arg prefix)left_wheel_steer" type="revolute">
       <parent link="$(arg prefix)base_link"/>
       <child link="$(arg prefix)left_wheel_steer_link"/>
       <origin xyz="0.1371 0.2554 0.27555" rpy="0 0 0"/>
       <axis xyz="0 0 1" />
-      <limit velocity="9999.0" effort="9999.0" lower="${-pi*6.0}" upper="${pi*6.0}" />
+      <limit effort="10000.0" velocity="100.0000" lower="-6.28" upper="6.28" />
+      <dynamics damping="0.6" friction="0.05"/>
   </joint>
   <link name="$(arg prefix)left_wheel_steer_link">
     <visual>
@@ -118,33 +130,24 @@
   <joint name="$(arg prefix)left_wheel_drive" type="continuous">
       <parent link="$(arg prefix)left_wheel_steer_link"/>
       <child link="$(arg prefix)left_wheel_drive_link"/>
-      <origin xyz="0 0 -0.18905" rpy="0 0 0"/>
-      <axis xyz="0 1 0" />
-      <limit velocity="9999.0" effort="9999.0"/>
+      <origin xyz="0 0 -0.28905" rpy="-1.570796327 0 0"/>
+      <axis xyz="0 0 1" />
   </joint>
   <link name="$(arg prefix)left_wheel_drive_link">
+    <xacro:solid_cylinder_inertia mass_val="1.8498940" radius_val="0.0825" length_val=".01" />
+
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="${meshes_file_direction}/left_wheel_drive_link.stl" scale="0.001 0.001 0.001" />
+        <cylinder length="0.01" radius="0.0825"/>
       </geometry>
-      <material name="silver">
-        <color rgba="0.75 0.75 0.75 1"/>
-      </material>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="${meshes_file_direction}/left_wheel_drive_link.stl" scale="0.001 0.001 0.001" />
+        <cylinder length="0.01" radius="0.0825"/>
       </geometry>
     </collision>
-    <inertial>
-       <origin xyz="0.000000000e+00 -1.499601700e-03 0.000000000e+00" />
-       <mass value="3.795460500e+00" />
-       <inertia ixx="7.187881500e-03" ixy="0.000000000e+00" ixz="0.000000000e+00"
-       iyy="1.156399900e-02" iyz="0.000000000e+00"
-       izz="7.187977000e-03" />
-    </inertial>
   </link>
 
   <joint name="$(arg prefix)right_wheel_steer" type="revolute">
@@ -152,7 +155,8 @@
       <child link="$(arg prefix)right_wheel_steer_link"/>
       <origin xyz="0.1371 -0.2554 0.27555" rpy="0 0 0"/>
       <axis xyz="0 0 1" />
-      <limit velocity="9999.0" effort="9999.0" lower="${-pi*6.0}" upper="${pi*6.0}" />
+      <limit effort="10000.0" velocity="100.0000" lower="-6.28" upper="6.28" />
+      <dynamics damping="0.6" friction="0.05"/>
   </joint>
   <link name="$(arg prefix)right_wheel_steer_link">
     <visual>
@@ -181,33 +185,24 @@
   <joint name="$(arg prefix)right_wheel_drive" type="continuous">
       <parent link="$(arg prefix)right_wheel_steer_link"/>
       <child link="$(arg prefix)right_wheel_drive_link"/>
-      <origin xyz="0 0 -0.18905" rpy="0 0 0"/>
-      <axis xyz="0 1 0" />
-      <limit velocity="9999.0" effort="9999.0"/>
+      <origin xyz="0 0 -0.28905" rpy="-1.570796327 0 0"/>
+      <axis xyz="0 0 1" />
   </joint>
   <link name="$(arg prefix)right_wheel_drive_link">
+    <xacro:solid_cylinder_inertia mass_val="1.8498940" radius_val="0.0825" length_val=".01" />
+
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="${meshes_file_direction}/right_wheel_drive_link.stl" scale="0.001 0.001 0.001" />
+        <cylinder length="0.01" radius="0.0825"/>
       </geometry>
-      <material name="silver">
-        <color rgba="0.75 0.75 0.75 1"/>
-      </material>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="${meshes_file_direction}/right_wheel_drive_link.stl" scale="0.001 0.001 0.001" />
+        <cylinder length="0.01" radius="0.0825"/>
       </geometry>
     </collision>
-    <inertial>
-       <origin xyz="0.000000000e+00 1.499601700e-03 0.000000000e+00" />
-       <mass value="3.795460500e+00" />
-       <inertia ixx="7.187881500e-03" ixy="0.000000000e+00" ixz="0.000000000e+00"
-       iyy="1.156399900e-02" iyz="0.000000000e+00"
-       izz="7.187977000e-03" />
-    </inertial>
   </link>
 
   <joint name="$(arg prefix)rear_wheel_steer" type="revolute">
@@ -215,7 +210,8 @@
       <child link="$(arg prefix)rear_wheel_steer_link"/>
       <origin xyz="-0.2899 0 0.27555" rpy="0 0 0"/>
       <axis xyz="0 0 1" />
-      <limit velocity="9999.0" effort="9999.0" lower="${-pi*6.0}" upper="${pi*6.0}" />
+      <limit effort="10000.0" velocity="100.0000" lower="-6.28" upper="6.28" />
+      <dynamics damping="0.6" friction="0.05"/>
   </joint>
   <link name="$(arg prefix)rear_wheel_steer_link">
     <visual>
@@ -244,33 +240,24 @@
   <joint name="$(arg prefix)rear_wheel_drive" type="continuous">
       <parent link="$(arg prefix)rear_wheel_steer_link"/>
       <child link="$(arg prefix)rear_wheel_drive_link"/>
-      <origin xyz="0 0 -0.18905" rpy="0 0 0"/>
-      <axis xyz="0 1 0" />
-      <limit velocity="9999.0" effort="9999.0"/>
+      <origin xyz="0 0 -0.28905" rpy="-1.570796327 0 0"/>
+      <axis xyz="0 0 1" />
   </joint>
   <link name="$(arg prefix)rear_wheel_drive_link">
+    <xacro:solid_cylinder_inertia mass_val="1.8498940" radius_val="0.0825" length_val=".01" />
+
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="${meshes_file_direction}/rear_wheel_drive_link.stl" scale="0.001 0.001 0.001" />
+        <cylinder length="0.01" radius="0.0825"/>
       </geometry>
-      <material name="silver">
-        <color rgba="0.75 0.75 0.75 1"/>
-      </material>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="${meshes_file_direction}/rear_wheel_drive_link.stl" scale="0.001 0.001 0.001" />
+        <cylinder length="0.01" radius="0.0825"/>
       </geometry>
     </collision>
-    <inertial>
-       <origin xyz="0.000000000e+00 1.499601700e-03 0.000000000e+00" />
-       <mass value="3.795460500e+00" />
-       <inertia ixx="7.187881500e-03" ixy="0.000000000e+00" ixz="0.000000000e+00"
-       iyy="1.156399900e-02" iyz="0.000000000e+00"
-       izz="7.187977000e-03" />
-    </inertial>
   </link>
 
   <xacro:ffw_sg2_follower_system

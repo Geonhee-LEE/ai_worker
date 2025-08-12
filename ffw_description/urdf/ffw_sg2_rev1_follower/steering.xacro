@@ -1,0 +1,43 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Steering Link + Joint -->
+  <xacro:macro name="steering" params="locationprefix locx locy locz yaw">
+    <link name="steering_${locationprefix}_link">
+      <inertial>
+        <origin xyz="0 0 0.0" rpy="0 0 0" />
+        <mass value="5.0" />
+        <inertia ixx="0.00022406" ixy="-5.3036E-09" ixz="-1.2289E-08" iyy="0.00021285" iyz="-2.5969E-08" izz="0.00027948" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+
+        <geometry>
+          <box size="0.1 0.1 0.02"/>
+        </geometry>
+
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.1 0.1 0.02"/>
+        </geometry>
+
+      </collision>
+    </link>
+
+    <gazebo reference="steering_${locationprefix}_link">
+      <material>Gazebo/Red</material>
+    </gazebo>
+
+    <joint name="steering_${locationprefix}_joint" type="revolute">
+      <origin xyz="${locx} ${locy} ${locz}" rpy="0 0 ${yaw}" />
+      <parent link="base_link" />
+      <child link="steering_${locationprefix}_link" />
+      <axis xyz="0 0 1" />
+      <limit effort="10000.0" velocity="100.0000" lower="-100.2" upper="100.2" />
+      <dynamics damping="0.6" friction="0.05"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>

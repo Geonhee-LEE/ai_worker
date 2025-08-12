@@ -34,16 +34,16 @@ constexpr size_t TACT_SWITCH_INTERFACE_INDEX = 2;
 constexpr double TACT_SWITCH_THRESHOLD = 0.5;
 constexpr double DEFAULT_JOG_SCALE = 0.1;
 
-  // cmd_vel scaling factors
+// cmd_vel scaling factors
 constexpr double LINEAR_X_SCALE = 3.0;
 constexpr double LINEAR_Y_SCALE = 3.0;
 constexpr double ANGULAR_Z_SCALE = 2.0;
 
-  // Sensor names
+// Sensor names
 const char LEFT_JOYSTICK_NAME[] = "sensorxel_l_joy";
 const char RIGHT_JOYSTICK_NAME[] = "sensorxel_r_joy";
 
-  // Mode names
+// Mode names
 const char SWERVE_MODE[] = "swerve";
 const char ARM_CONTROL_MODE[] = "arm_control";
 }  // namespace constants
@@ -90,15 +90,17 @@ std::vector<double> JoystickController::read_and_normalize_sensor_values(size_t 
 
   for (size_t j = 0; j < state_interface_types_.size(); ++j) {
     if (j >= joint_state_interface_.size() || sensor_idx >= joint_state_interface_[j].size()) {
-      RCLCPP_ERROR(get_node()->get_logger(), "Invalid interface access: j=%zu, i=%zu", j,
-          sensor_idx);
+      RCLCPP_ERROR(
+        get_node()->get_logger(), "Invalid interface access: j=%zu, i=%zu", j,
+        sensor_idx);
       continue;
     }
 
     auto opt_value = joint_state_interface_[j][sensor_idx].get().get_optional();
     if (!opt_value.has_value()) {
-      RCLCPP_ERROR(get_node()->get_logger(), "No value for state interface [%zu][%zu]", j,
-          sensor_idx);
+      RCLCPP_ERROR(
+        get_node()->get_logger(), "No value for state interface [%zu][%zu]", j,
+        sensor_idx);
       continue;
     }
 
@@ -110,7 +112,8 @@ std::vector<double> JoystickController::read_and_normalize_sensor_values(size_t 
     const auto & interface_name = state_interface_types_[j];
     const auto & reverse_interfaces =
       sensor_reverse_interfaces_.at(sensorxel_joy_names_[sensor_idx]);
-    if (std::find(reverse_interfaces.begin(), reverse_interfaces.end(),
+    if (std::find(
+        reverse_interfaces.begin(), reverse_interfaces.end(),
         interface_name) != reverse_interfaces.end())
     {
       normalized_value = -normalized_value;
@@ -160,8 +163,9 @@ void JoystickController::update_last_active_positions(
 
   for (size_t i = 0; i < controlled_joints.size(); ++i) {
     const auto & joint_name = controlled_joints[i];
-    auto it = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(),
-        joint_name);
+    auto it = std::find(
+      current_joint_states_.name.begin(), current_joint_states_.name.end(),
+      joint_name);
     if (it != current_joint_states_.name.end()) {
       size_t index = std::distance(current_joint_states_.name.begin(), it);
       if (i < last_active_positions.size()) {
@@ -182,8 +186,9 @@ std::vector<double> JoystickController::calculate_joint_positions(
 
   for (size_t i = 0; i < controlled_joints.size(); ++i) {
     const auto & joint_name = controlled_joints[i];
-    auto it = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(),
-        joint_name);
+    auto it = std::find(
+      current_joint_states_.name.begin(), current_joint_states_.name.end(),
+      joint_name);
     if (it != current_joint_states_.name.end()) {
       size_t index = std::distance(current_joint_states_.name.begin(), it);
       double current_position = current_joint_states_.position[index];
@@ -229,8 +234,9 @@ void JoystickController::publish_joint_trajectory(
   if (joint_trajectory_publisher) {
     joint_trajectory_publisher->publish(trajectory_msg);
   } else {
-    RCLCPP_WARN(get_node()->get_logger(),
-        "Joint trajectory publisher not found for sensor: %s", sensor_name.c_str());
+    RCLCPP_WARN(
+      get_node()->get_logger(),
+      "Joint trajectory publisher not found for sensor: %s", sensor_name.c_str());
   }
 }
 
@@ -320,8 +326,9 @@ void JoystickController::joint_states_callback(const sensor_msgs::msg::JointStat
       last_active_positions.resize(controlled_joints.size());
       for (size_t i = 0; i < controlled_joints.size(); ++i) {
         const auto & joint_name = controlled_joints[i];
-        auto it = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(),
-            joint_name);
+        auto it = std::find(
+          current_joint_states_.name.begin(), current_joint_states_.name.end(),
+          joint_name);
         if (it != current_joint_states_.name.end()) {
           size_t index = std::distance(current_joint_states_.name.begin(), it);
           last_active_positions[i] = current_joint_states_.position[index];
@@ -357,12 +364,14 @@ controller_interface::return_type JoystickController::update(
     std::vector<double> normalized_values = read_and_normalize_sensor_values(sensor_idx);
 
     // Check if any joystick is active
-    bool any_sensorxel_joy_active = std::any_of(normalized_values.begin(), normalized_values.end(),
-        [](double value) {return std::abs(value) > 0.0;});
+    bool any_sensorxel_joy_active = std::any_of(
+      normalized_values.begin(), normalized_values.end(),
+      [](double value) {return std::abs(value) > 0.0;});
 
     // Update joystick values
-    update_joystick_values(sensor_name, normalized_values, joystick_values,
-                          left_tact_switch_pressed, right_tact_switch_pressed);
+    update_joystick_values(
+      sensor_name, normalized_values, joystick_values,
+      left_tact_switch_pressed, right_tact_switch_pressed);
 
     // Update last active positions when joystick becomes inactive
     if (was_active_ && !any_sensorxel_joy_active && !current_joint_states_.name.empty() &&
@@ -370,8 +379,9 @@ controller_interface::return_type JoystickController::update(
     {
       for (size_t i = 0; i < controlled_joints.size(); ++i) {
         const auto & joint_name = controlled_joints[i];
-        auto it = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(),
-            joint_name);
+        auto it = std::find(
+          current_joint_states_.name.begin(), current_joint_states_.name.end(),
+          joint_name);
         if (it != current_joint_states_.name.end()) {
           size_t index = std::distance(current_joint_states_.name.begin(), it);
           if (i < last_active_positions.size()) {
@@ -386,8 +396,9 @@ controller_interface::return_type JoystickController::update(
       std::vector<double> positions;
 
       if (swerve_mode || any_sensorxel_joy_active) {
-        positions = calculate_joint_positions(controlled_joints, normalized_values,
-                                           sensor_name, swerve_mode, joystick_values);
+        positions = calculate_joint_positions(
+          controlled_joints, normalized_values,
+          sensor_name, swerve_mode, joystick_values);
         // Update last active positions with new positions
         for (size_t i = 0; i < positions.size() && i < last_active_positions.size(); ++i) {
           last_active_positions[i] = positions[i];
@@ -480,8 +491,9 @@ controller_interface::CallbackReturn JoystickController::on_configure(
     // joint_trajectory_topic
     std::string topic_param = sensor_name + "_joint_trajectory_topic";
     if (get_node()->has_parameter(topic_param)) {
-      RCLCPP_WARN(get_node()->get_logger(), "parameter: %s, value: %s", topic_param.c_str(),
-          get_node()->get_parameter(topic_param).as_string().c_str());
+      RCLCPP_WARN(
+        get_node()->get_logger(), "parameter: %s, value: %s", topic_param.c_str(),
+        get_node()->get_parameter(topic_param).as_string().c_str());
       sensor_joint_trajectory_topic_[sensor_name] =
         get_node()->get_parameter(topic_param).as_string();
     } else {
@@ -494,8 +506,9 @@ controller_interface::CallbackReturn JoystickController::on_configure(
     } else {
       // fallback: default jog scale
       sensor_jog_scale_[sensor_name] = constants::DEFAULT_JOG_SCALE;
-      RCLCPP_WARN(get_node()->get_logger(), "parameter: %s not found, using default %.1f",
-          jog_scale_param.c_str(), constants::DEFAULT_JOG_SCALE);
+      RCLCPP_WARN(
+        get_node()->get_logger(), "parameter: %s not found, using default %.1f",
+        jog_scale_param.c_str(), constants::DEFAULT_JOG_SCALE);
     }
   }
 
@@ -506,17 +519,19 @@ controller_interface::CallbackReturn JoystickController::on_configure(
 
   // Create publisher for joint trajectory
   for (const auto & sensor_name : sensorxel_joy_names_) {
-    RCLCPP_WARN(get_node()->get_logger(),
-        "Creating joint trajectory publisher for sensor: %s, topic: %s", sensor_name.c_str(),
-        sensor_joint_trajectory_topic_[sensor_name].c_str());
+    RCLCPP_WARN(
+      get_node()->get_logger(),
+      "Creating joint trajectory publisher for sensor: %s, topic: %s", sensor_name.c_str(),
+      sensor_joint_trajectory_topic_[sensor_name].c_str());
     sensor_joint_trajectory_publisher_[sensor_name] =
       get_node()->create_publisher<trajectory_msgs::msg::JointTrajectory>(
       sensor_joint_trajectory_topic_[sensor_name], rclcpp::SystemDefaultsQoS());
   }
 
   // Create subscriber for joint states
-  RCLCPP_WARN(get_node()->get_logger(), "Creating joint states subscriber for topic: %s",
-      params_.joint_states_topic.c_str());
+  RCLCPP_WARN(
+    get_node()->get_logger(), "Creating joint states subscriber for topic: %s",
+    params_.joint_states_topic.c_str());
   joint_states_subscriber_ = get_node()->create_subscription<sensor_msgs::msg::JointState>(
     params_.joint_states_topic, rclcpp::SystemDefaultsQoS(),
     std::bind(&JoystickController::joint_states_callback, this, std::placeholders::_1));

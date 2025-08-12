@@ -1,0 +1,60 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="solid_cylinder_inertia" params="mass_val radius_val length_val">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${mass_val}" />
+      <xacro:property name="r_sq" value="${radius_val * radius_val}" />
+      <xacro:property name="l_sq" value="${length_val * length_val}" />
+      <xacro:property name="ixx_iyy_val" value="${(1.0/12.0) * mass_val * (3 * r_sq + l_sq)}" />
+      <xacro:property name="izz_val" value="${0.5 * mass_val * r_sq}" />
+      <inertia
+        ixx="${ixx_iyy_val}" ixy="0.0" ixz="0.0"
+        iyy="${ixx_iyy_val}" iyz="0.0"
+        izz="${izz_val}" />
+    </inertial>
+  </xacro:macro>
+
+  <!-- Wheel Link + Joint -->
+  <xacro:macro name="driving" params="locationprefix locx locy locz">
+
+    <link name="wheel_${locationprefix}_link">
+      <xacro:solid_cylinder_inertia mass_val="1.8498940" radius_val="0.0825" length_val=".01" />
+
+      <visual>
+        <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="0.01" radius="0.0825"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0.0 0.0 -0.0" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="0.01" radius="0.0825"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <gazebo reference="wheel_${locationprefix}_link">
+      <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="wheel_${locationprefix}_joint">
+      <mu1 value="1.0"/>
+      <mu2 value="0.5"/>
+      <kp value="10000000.0" />
+      <kd value="1.0" />
+      <fdir1 value="1 0 0"/>
+    </gazebo>
+
+
+    <joint name="wheel_${locationprefix}_joint" type="continuous">
+      <origin xyz="${locx} ${locy} ${locz}" rpy="-1.570796327 0 0" />
+      <parent link="steering_${locationprefix}_link" />
+      <child link="wheel_${locationprefix}_link" />
+      <axis xyz="0 0 1" />
+    </joint>
+
+  </xacro:macro>
+
+</robot>

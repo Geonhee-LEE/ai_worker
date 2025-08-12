@@ -125,7 +125,8 @@ controller_interface::CallbackReturn JointTrajectoryCommandBroadcaster::on_confi
     // Create subscriber for follower joint states
     joint_states_subscriber_ = get_node()->create_subscription<sensor_msgs::msg::JointState>(
       params_.follower_joint_states_topic, rclcpp::SystemDefaultsQoS(),
-      std::bind(&JointTrajectoryCommandBroadcaster::joint_states_callback, this,
+      std::bind(
+        &JointTrajectoryCommandBroadcaster::joint_states_callback, this,
         std::placeholders::_1));
 
     RCLCPP_INFO(
@@ -292,7 +293,8 @@ void JointTrajectoryCommandBroadcaster::joint_states_callback(
   // Debug logging (only log occasionally to avoid spam)
   static int callback_count = 0;
   if (++callback_count % 100 == 0) {
-    RCLCPP_DEBUG(get_node()->get_logger(),
+    RCLCPP_DEBUG(
+      get_node()->get_logger(),
       "Received follower joint states for %zu joints", msg->name.size());
   }
 }
@@ -371,14 +373,16 @@ controller_interface::return_type JointTrajectoryCommandBroadcaster::update(
   if (first_publish_) {
     joints_synced_ = false;
     first_publish_ = false;
-    RCLCPP_INFO(get_node()->get_logger(),
-        "First publish - using adaptive time_from_start based on error");
+    RCLCPP_INFO(
+      get_node()->get_logger(),
+      "First publish - using adaptive time_from_start based on error");
   } else {
     // Once synced, stay synced permanently
     if (!joints_synced_ && current_synced) {
       joints_synced_ = true;
-      RCLCPP_INFO(get_node()->get_logger(),
-          "Joints synced for the first time - switching to immediate time_from_start permanently");
+      RCLCPP_INFO(
+        get_node()->get_logger(),
+        "Joints synced for the first time - switching to immediate time_from_start permanently");
     }
   }
 
@@ -418,7 +422,7 @@ controller_interface::return_type JointTrajectoryCommandBroadcaster::update(
       traj_msg.points[0].time_from_start = rclcpp::Duration(0, 0);  // immediate when synced
     } else {
       // Adaptive timing based on mean error using parameters
-      if(mean_error < params_.min_error) {
+      if (mean_error < params_.min_error) {
         mean_error = 0;
       }
 
